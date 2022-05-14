@@ -1,0 +1,8 @@
+{
+  "replacements": [
+    {
+      "find": "b.Z.utilities.getSelectedText(this.props.pageId,(e=>{if(e.length>0){const t=this.refInputText.current;t&&(t.value=e.substring(0,128)),this.onFindInPageTextChanged()}this.focusFindInPageInput()}))",
+      "replace": "this.focusFindInPageInput()"
+    }
+  ]
+}
