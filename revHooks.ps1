@@ -102,7 +102,7 @@ Get-ChildItem $scriptPath -Filter *.json -Recurse | % {
   # if changes were succefully made apply them to bundle.js
   if ($saveChanges) {
     Write-Host "** Saving changes to bundle.js"
-    $tempBundle | Out-File $bundleJS
+    $tempBundle | Out-File $bundleJS -Encoding utf8
   }
   else {
     Write-Host "** Hook not applied to bundle.js"
