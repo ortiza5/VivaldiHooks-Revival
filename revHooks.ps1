@@ -74,7 +74,7 @@ Write-Host "* Starting to patch in hooks"
 $scriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
 Get-ChildItem $scriptPath -Filter *.json -Recurse | % { 
   $hookJson = Get-Content $_.FullName -Raw | ConvertFrom-Json
-  $tempBundle = Get-Content $bundleJS -Raw
+  $tempBundle = Get-Content $bundleJS -Raw -Encoding utf8
 
   Write-Host "---"
   Write-Host "* Patching in hook $_"
