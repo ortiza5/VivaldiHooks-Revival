@@ -22,6 +22,24 @@ function Wait-And-Exit {
   }
 }
 
+function Parse-Bundle {
+  param ($path)
+  $parsedSections = @{}
+  $data = Get-Content $path -Raw -Encoding utf8
+  $data = $data -replace [regex]::Escape("(()=>{var e,t={")
+  $data = $data.Substring(0, $data.IndexOf('},n={};function'))
+  $data | Select-String -Pattern '(^|,)\d{1,6}:(\(|e).*?(?=(,\d{1,6}:(\(|e)|$))' -AllMatches |
+  ForEach-Object {
+    Write-Host $_.Matches[1].Groups[0].Value
+  }
+  # Write-Host $matches.groups[1].value
+  # Set-Content -Path file2.json -Value $data
+  # (^ | , )\d { 1, 6 }:\(.*?(?=(, \d { 1, 6 }:\( | $))
+  # $sections = $data | ConvertFrom-Json
+  # Write-Host $sections.76259
+
+}
+
 
 # find the path to the most recent version of Vivaldi
 Get-ChildItem $installPath -Filter browser.html -Recurse | % { 
@@ -69,6 +87,8 @@ switch ($answer) {
 # load contents of bundle.js
 $bundleJS = "$latestVersionFolder\bundle.js"
 
+Parse-Bundle $bundleJS
+
 # find the JSON hook files and implement the changes
 Write-Host "* Starting to patch in hooks"
 $scriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -89,6 +109,7 @@ Get-ChildItem $scriptPath -Filter *.json -Recurse | % {
     }
     if ($tempBundle.Contains($change.find)) {
       Write-Host "** Made change number $changeNumber"
+      Write-Host ([regex]::Escape($change.find))
       $tempBundle = $tempBundle.Replace($change.find, $change.replace)
       $changeNumber = $changeNumber + 1
     }
