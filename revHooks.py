@@ -47,6 +47,20 @@ def backupBundleJs(path):
 
   shutil.copy(bundlePath, dst)
 
+def parseBundleJsToDict(bundleText):
+  parsedOutput = {}
+
+  # remove parts before functions object
+  bundleText = bundleText.replace("(()=>{var e,t={","")
+  # remove everything after the functions object
+  bundleText = bundleText.split("},n={};function", 1)[0]
+
+  # split into sections
+  pattern = re.compile(r'(^|,)(\d{1,6}):((\(|e).*?)(?=(,\d{1,6}:(\(|e)|$))')
+  for match in re.finditer(pattern, bundleText):
+    parsedOutput[match.group(2)] = match.group(3)
+
+  return parsedOutput
 # 
 def errorHandler(type):
   message = ""
@@ -116,7 +130,7 @@ if __name__ == '__main__':
       Choice: """, flags=re.MULTILINE))
       if choice in ["1", "2", "3"]:
         break
-      print("Invalid choice, please only input 1, 2, or 3")
+      print("***\nInvalid choice, please only input 1, 2, or 3\n***")
 
   match choice:
     case "1":
@@ -127,3 +141,11 @@ if __name__ == '__main__':
       exit()
     case _:
       backupBundleJs(currentPath)
+
+  # get the contents of bundle.js so parts of it can be modified
+  with open(os.path.join(currentPath, "bundle.js"), 'r', encoding="utf-8") as f:
+   bundleJs = f.read()
+  
+  parsedBundle = parseBundleJsToDict(bundleJs)
+  
+  print(parsedBundle["62077"])
