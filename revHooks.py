@@ -44,8 +44,8 @@ def errorHandler(type):
 if __name__ == '__main__':
   # get any command line arguments
   args = sys.argv[1:]
-  shortNames = "vp"
-  longNames = ["Verbose", "InstallPath"]
+  shortNames = "vp:"
+  longNames = ["Verbose", "InstallPath="]
 
   try:
     arguments, values = getopt.getopt(args, shortNames, longNames)
