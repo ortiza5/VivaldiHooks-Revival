@@ -1,7 +1,9 @@
+from ast import match_case
 import os
 import platform
 import getopt, sys
 import shutil
+import re
 
 # The program will try to guess where Vivaldi is installed based on your operating system,
 # but you can specify an install path manually
@@ -51,11 +53,11 @@ def errorHandler(type):
 
   match type:
     case "bad directory":
-      message = "The provided install path is not a valid directory.\n \
-        Please enter the install path manually with the INSTALL_PATH variable."
+      message = """The provided install path is not a valid directory.
+        Please enter the install path manually with the INSTALL_PATH variable."""
     case "no browser.html":
-      message = "The browser.html file was not found under the install path used.\n \
-        Consider manually setting the INSTALL_PATH variable with a known good path."
+      message = """The browser.html file was not found under the install path used.
+        Consider manually setting the INSTALL_PATH variable with a known good path."""
     case "no backup":
       message = "No backup file was found. Make sure bundle.js.bak exists."
     case "no bundle":
@@ -98,5 +100,30 @@ if __name__ == '__main__':
     case "Custom":
       INSTALL_PATH = os.path.expandvars(INSTALL_PATH)
 
-
+  # find the location that contains the latest bundle.js file
   currentPath = getCurrentVersionPath(INSTALL_PATH)
+  if not os.path.isdir(currentPath):
+    errorHandler("no browser.html")
+
+  # prompt the user for actions to take if a backup bundle.js is found
+  choice = ""
+  if os.path.isfile(os.path.join(currentPath, "bundle.js.bak")):
+    while True:
+      choice = input(re.sub('^\s+', '', """Choose an option and enter the corresponding number:
+      - (1) [Recommended] Restore bundle.js from the backup and CONTINUE
+      - (2) Restore bundle.js from the backup and EXIT
+      - (3) Delete the backup and create a new one before CONTINUING
+      Choice: """, flags=re.MULTILINE))
+      if choice in ["1", "2", "3"]:
+        break
+      print("Invalid choice, please only input 1, 2, or 3")
+
+  match choice:
+    case "1":
+      restoreBundleJsFromBackup(currentPath)
+      backupBundleJs(currentPath)
+    case "2":
+      restoreBundleJsFromBackup(currentPath)
+      exit()
+    case _:
+      backupBundleJs(currentPath)
