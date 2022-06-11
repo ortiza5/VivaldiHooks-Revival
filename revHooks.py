@@ -1,6 +1,7 @@
 import os
 import platform
 import getopt, sys
+import shutil
 
 # The program will try to guess where Vivaldi is installed based on your operating system,
 # but you can specify an install path manually
@@ -17,13 +18,33 @@ def getCurrentVersionPath(basePath):
   for root, dirs, files in os.walk(basePath):
     for name in files:
       if name.endswith("browser.html"):
-        found.add(os.path.join(root, name))
+        found.add(root)
 
   if len(found) < 1:
     errorHandler("no browser.html")
 
   # in some rare instances, there could be more than one file found, so only use the latest version
   return max(found)
+
+def restoreBundleJsFromBackup(path):
+  backupPath = os.path.join(path, "bundle.js.bak")
+  dst = os.path.join(path, "bundle.js")
+
+  if not os.path.isfile(backupPath):
+    errorHandler("no backup")
+
+  shutil.copy(backupPath, dst)
+  os.remove(backupPath)
+
+def backupBundleJs(path):
+  bundlePath = os.path.join(path, "bundle.js")
+  dst = os.path.join(path, "bundle.js.bak")
+
+  if not os.path.isfile(bundlePath):
+    errorHandler("no bundle")
+
+  shutil.copy(bundlePath, dst)
+
 # 
 def errorHandler(type):
   message = ""
@@ -35,6 +56,10 @@ def errorHandler(type):
     case "no browser.html":
       message = "The browser.html file was not found under the install path used.\n \
         Consider manually setting the INSTALL_PATH variable with a known good path."
+    case "no backup":
+      message = "No backup file was found. Make sure bundle.js.bak exists."
+    case "no bundle":
+      message = "No bundle.js file was found. Make sure bundle.js exists."
     case _:
       message = "Unspecified error..."
   
@@ -74,5 +99,4 @@ if __name__ == '__main__':
       INSTALL_PATH = os.path.expandvars(INSTALL_PATH)
 
 
-  browserHtml = getCurrentVersionPath(INSTALL_PATH)
-  VERBOSE and print(browserHtml)
+  currentPath = getCurrentVersionPath(INSTALL_PATH)
