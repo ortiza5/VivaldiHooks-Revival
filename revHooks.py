@@ -11,6 +11,12 @@ import re
 INSTALL_PATH = ""
 VERBOSE = False
 
+"""
+  Finds the directory that contains the most recent Vivaldi interface resources
+
+  :param basePath: the installation path of Vivaldi that the function will search in
+  :return: the path to the directory that contains the most recent interface resources
+"""
 def getCurrentVersionPath(basePath):
   if not os.path.isdir(basePath):
     errorHandler("bad directory")
@@ -28,6 +34,12 @@ def getCurrentVersionPath(basePath):
   # in some rare instances, there could be more than one file found, so only use the latest version
   return max(found)
 
+"""
+  Restores the contents of bundle.js to an unaltered state from a backup file
+
+  :param path: the path to the directory that contains the most recent interface resources
+  :return: none
+"""
 def restoreBundleJsFromBackup(path):
   backupPath = os.path.join(path, "bundle.js.bak")
   dst = os.path.join(path, "bundle.js")
@@ -38,6 +50,12 @@ def restoreBundleJsFromBackup(path):
   shutil.copy(backupPath, dst)
   os.remove(backupPath)
 
+"""
+  Backs up the contents of bundle.js to a backup file in the same directory
+
+  :param path: the path to the directory that contains the most recent interface resources
+  :return: none
+"""
 def backupBundleJs(path):
   bundlePath = os.path.join(path, "bundle.js")
   dst = os.path.join(path, "bundle.js.bak")
@@ -47,6 +65,12 @@ def backupBundleJs(path):
 
   shutil.copy(bundlePath, dst)
 
+"""
+  Parse the function object section of bundle.js into a form usable in Python
+
+  :param path: the text content of the bundle.js file
+  :return: dictionary with bundle.js functions as values and the corresponding numbers as keys
+"""
 def parseBundleJsToDict(bundleText):
   parsedOutput = {}
 
@@ -61,7 +85,13 @@ def parseBundleJsToDict(bundleText):
     parsedOutput[match.group(2)] = match.group(3)
 
   return parsedOutput
-# 
+
+"""
+  Halts the program and outputs the reason as an error
+
+  :param type: the type of error message to display
+  :return: none
+"""
 def errorHandler(type):
   message = ""
 
@@ -147,5 +177,5 @@ if __name__ == '__main__':
    bundleJs = f.read()
   
   parsedBundle = parseBundleJsToDict(bundleJs)
-  
+
   print(parsedBundle["62077"])
