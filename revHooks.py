@@ -89,7 +89,7 @@ if __name__ == '__main__':
   match operatingSystem:
     case "Darwin":
       # TODO: Figure out default install directory for Macs
-      INSTALL_PATH = os.path.expandvars('')
+      INSTALL_PATH = os.path.expandvars('\Applications\Vivaldi.app\Contents\Versions')
     case "Linux":
       # TODO: Figure out default install directory for Linux
       INSTALL_PATH = os.path.expandvars('')
