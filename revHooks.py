@@ -1,10 +1,12 @@
 import os
 import platform
+import getopt, sys
 
 # The program will try to guess where Vivaldi is installed based on your operating system,
 # but you can specify an install path manually
 # You can use variables like: "%LOCALAPPDATA%"
 INSTALL_PATH = ""
+VERBOSE = False
 
 def getCurrentVersionPath(basePath):
   if not os.path.isdir(basePath):
@@ -40,9 +42,25 @@ def errorHandler(type):
 
 
 if __name__ == '__main__':
+  # get any command line arguments
+  args = sys.argv[1:]
+  shortNames = "vp"
+  longNames = ["Verbose", "InstallPath"]
+
+  try:
+    arguments, values = getopt.getopt(args, shortNames, longNames)
+
+    for arg, value in arguments:
+      if arg in ("-v", "--Verbose"):
+        VERBOSE = True
+      if arg in ("-p", "--InstallPath"):
+        INSTALL_PATH = value
+  except getopt.error as err:
+    print(str(err))
 
   # Get the default install path for different OSs or use the user configured path 
   operatingSystem = "Custom" if INSTALL_PATH else platform.system()
+
   match operatingSystem:
     case "Darwin":
       # TODO: Figure out default install directory for Macs
@@ -57,3 +75,4 @@ if __name__ == '__main__':
 
 
   browserHtml = getCurrentVersionPath(INSTALL_PATH)
+  VERBOSE and print(browserHtml)
