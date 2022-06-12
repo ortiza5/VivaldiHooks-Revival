@@ -1,8 +1,15 @@
 {
+  "substitutions": [
+    {
+      "name": "VIVALDI",
+      "find": "Potato22"
+    }
+  ],
   "replacements": [
     {
       "find": "d.Z.utilities.getSelectedText(this.props.pageId,(e=>{if(e.length>0){const t=this.refInputText.current;t&&(t.value=e.substring(0,128)),this.onFindInPageTextChanged()}this.focusFindInPageInput()}))",
-      "replace": "this.focusFindInPageInput()"
+      "replace": "this.focusFindInPageInput()",
+      "sectionID": "dispatch({actionType:\"HISTORY_LOAD_YESTERDAY_AND_OLDER"
     }
   ]
 }

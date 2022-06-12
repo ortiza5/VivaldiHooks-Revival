@@ -1,9 +1,9 @@
-from ast import match_case
 import os
 import platform
 import getopt, sys
 import shutil
 import re
+import json
 
 # The program will try to guess where Vivaldi is installed based on your operating system,
 # but you can specify an install path manually
@@ -86,6 +86,52 @@ def parseBundleJsToDict(bundleText):
 
   return parsedOutput
 
+def applyHook(hook, bundleText, bundleFunctions):
+  substitutions = hook["substitutions"]
+  replacements = hook["replacements"]
+
+  # build dictionary for parts of replacements that need to be changed
+  subsDictionary = {}
+  for sub in substitutions:
+    for section, code in bundleFunctions.items():
+      if sub["find"] in code:
+        subsDictionary[sub["name"]] = section
+        break
+
+    if sub["name"] not in subsDictionary:
+      return False
+
+  for replacement in replacements:
+    find = replacement["find"]
+    replace = replacement["replace"]
+
+    # find the code section to extract letters from
+    section = None
+    for k, v in bundleFunctions.items():
+      if replacement["sectionID"] in v:
+        section = k
+        break
+    if section is None: return False
+
+    # find the letters that correspond to the required function numbers within the section being acted on
+    letters = {}
+    for sub, number in subsDictionary.items():
+      if sub not in find or sub not in replace: continue
+
+      pattern = re.compile("(?<=,|var )([a-zA-Z]+)(?=\=n\(" + number + ")")
+      letter = re.match(pattern, bundleFunctions[section]).group(0)
+
+      if not letter: return False
+
+
+      # TODO: Pick back up here...
+
+
+
+
+
+  return subsDictionary
+
 """
   Halts the program and outputs the reason as an error
 
@@ -107,7 +153,7 @@ def errorHandler(type):
     case "no bundle":
       message = "No bundle.js file was found. Make sure bundle.js exists."
     case "no hooks":
-      message = """No hook .json files were found.
+      message = """No hook .json files were found or applied.
         Make sure this script is in the same parent folder as the 'hooks' folder or
         that the script is in the same folder as the hooks themselves."""
     case _:
@@ -177,7 +223,7 @@ if __name__ == '__main__':
       backupBundleJs(currentPath)
 
   # get the contents of bundle.js so parts of it can be modified
-  with open(os.path.join(currentPath, "bundle.js"), 'r', encoding="utf-8") as f:
+  with open(os.path.join(currentPath, "bundle.js"), "r", encoding="utf-8") as f:
    bundleJs = f.read()
   
   parsedBundle = parseBundleJsToDict(bundleJs)
@@ -187,5 +233,17 @@ if __name__ == '__main__':
   pathToHooks = os.path.join(".", "hooks")
   if not os.path.isdir(pathToHooks):
     pathToHooks = os.path.realpath(".")
-  if not os.path.isdir(pathToHooks):
+
+  appliedHooks = []
+  for hook in os.listdir(pathToHooks):
+    if hook.endswith(".json"):
+      with open(os.path.join(pathToHooks, hook), "r", encoding="utf-8") as f:
+        data = json.load(f)
+        result = applyHook(data, bundleJs, parsedBundle)
+        print(result)
+        # if result:
+        #   bundleJs = result
+        #   appliedHooks.append(hook)
+
+  if len(appliedHooks) == 0:
     errorHandler("no hooks")
