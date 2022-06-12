@@ -106,6 +106,10 @@ def errorHandler(type):
       message = "No backup file was found. Make sure bundle.js.bak exists."
     case "no bundle":
       message = "No bundle.js file was found. Make sure bundle.js exists."
+    case "no hooks":
+      message = """No hook .json files were found.
+        Make sure this script is in the same parent folder as the 'hooks' folder or
+        that the script is in the same folder as the hooks themselves."""
     case _:
       message = "Unspecified error..."
   
@@ -154,10 +158,10 @@ if __name__ == '__main__':
   if os.path.isfile(os.path.join(currentPath, "bundle.js.bak")):
     while True:
       choice = input(re.sub('^\s+', '', """Choose an option and enter the corresponding number:
-      - (1) [Recommended] Restore bundle.js from the backup and CONTINUE
-      - (2) Restore bundle.js from the backup and EXIT
-      - (3) Delete the backup and create a new one before CONTINUING
-      Choice: """, flags=re.MULTILINE))
+        - (1) [Recommended] Restore bundle.js from the backup and CONTINUE
+        - (2) Restore bundle.js from the backup and EXIT
+        - (3) Delete the backup and create a new one before CONTINUING
+        Choice: """, flags=re.MULTILINE))
       if choice in ["1", "2", "3"]:
         break
       print("***\nInvalid choice, please only input 1, 2, or 3\n***")
@@ -178,4 +182,10 @@ if __name__ == '__main__':
   
   parsedBundle = parseBundleJsToDict(bundleJs)
 
-  print(parsedBundle["62077"])
+  # find the hook files
+  # they can either be in a separate hooks folder or the same directory as this script
+  pathToHooks = os.path.join(".", "hooks")
+  if not os.path.isdir(pathToHooks):
+    pathToHooks = os.path.realpath(".")
+  if not os.path.isdir(pathToHooks):
+    errorHandler("no hooks")
