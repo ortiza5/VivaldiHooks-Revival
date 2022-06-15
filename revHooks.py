@@ -126,6 +126,8 @@ def applyHook(hook, bundleText, bundleFunctions):
 
       # TODO: Pick back up here...
 
+      # Regex for finding the Vivaldi component number
+      # (?<=n\()\d{1,6}(?=\);let [a-zA-Z]+=!1;f.+"visual-tab","visual-list","visual-list-preview")
 
 
 
