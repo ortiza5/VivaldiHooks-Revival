@@ -92,20 +92,36 @@ def applyHook(hook, bundleText, bundleFunctions):
 
   # build dictionary for parts of replacements that need to be changed
   subsDictionary = {}
-  for sub in substitutions:
-    for section, code in bundleFunctions.items():
-      if sub["find"] in code:
-        subsDictionary[sub["name"]] = section
-        break
 
-    if sub["name"] not in subsDictionary:
-      return False
+  # look for any substitutions that should be section numbers
+  if "sectionIdFind" in substitutions:
+    for subName in substitutions["sectionIdFind"]:
+      if not subName["find"] or not subName["name"]: return False
+      for section, code in bundleFunctions.items():
+        if subName["find"] in code:
+          subsDictionary[subName["name"]] = section
+          break
 
+      if subName["name"] not in subsDictionary:
+        return False
+
+  # look for any direct substitutions
+  if "direct" in substitutions:
+    for subName in substitutions["direct"]:
+      if not subName["find"] or not subName["name"]: return False
+      pattern = re.compile(subName["find"])
+      match = re.findall(pattern, bundleText)[0]
+
+      if not match: return False
+
+      subsDictionary[subName["name"]] = match
+
+  # make the replacements and use the subs dictionary to make any changes
   for replacement in replacements:
     find = replacement["find"]
     replace = replacement["replace"]
 
-    # find the code section to extract letters from
+    # find the code section where the replacement is taking place
     section = None
     for k, v in bundleFunctions.items():
       if replacement["sectionID"] in v:
@@ -113,26 +129,22 @@ def applyHook(hook, bundleText, bundleFunctions):
         break
     if section is None: return False
 
-    # find the letters that correspond to the required function numbers within the section being acted on
-    letters = {}
-    for sub, number in subsDictionary.items():
-      if sub not in find or sub not in replace: continue
+    # convert substitutions to letters used in the section
+    for subName, subValue in subsDictionary.items():
+      if subName not in find and subName not in replace: continue
 
-      pattern = re.compile("(?<=,|var )([a-zA-Z]+)(?=\=n\(" + number + ")")
-      letter = re.match(pattern, bundleFunctions[section]).group(0)
+      pattern = re.compile("(?:(?<=,)|(?<=var ))([a-zA-Z]+)(?=\=n\(" + subValue + ")")
+      letter = re.findall(pattern, bundleFunctions[section])[0]
 
       if not letter: return False
 
+      find = find.replace(subName, letter)
+      replace = replace.replace(subName, letter)
+    
+    # make the actual replacement
+    bundleText = bundleText.replace(find, replace)
 
-      # TODO: Pick back up here...
-
-      # Regex for finding the Vivaldi component number
-      # (?<=n\()\d{1,6}(?=\);let [a-zA-Z]+=!1;f.+"visual-tab","visual-list","visual-list-preview")
-
-
-
-
-  return subsDictionary
+  return bundleText
 
 """
   Halts the program and outputs the reason as an error
@@ -242,10 +254,15 @@ if __name__ == '__main__':
       with open(os.path.join(pathToHooks, hook), "r", encoding="utf-8") as f:
         data = json.load(f)
         result = applyHook(data, bundleJs, parsedBundle)
-        print(result)
-        # if result:
-        #   bundleJs = result
-        #   appliedHooks.append(hook)
+        
+        if result:
+          bundleJs = result
+          appliedHooks.append(hook)
 
   if len(appliedHooks) == 0:
     errorHandler("no hooks")
+
+  print(appliedHooks)
+
+  with open(os.path.join(currentPath, "bundle.js"), "w", encoding="utf-8") as f:
+   f.write(bundleJs)
