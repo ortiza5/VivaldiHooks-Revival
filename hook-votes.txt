@@ -1,0 +1,6 @@
+1 x qc-close-tab.js
+1 x speeddial-shortcuts.js
+2 x speeddial-spacing.js
+1 x small-vert-pinned-tabs.js
+2 x tab-size.js
+2 x treeview-spacing.js

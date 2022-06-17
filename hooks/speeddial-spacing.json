@@ -1,0 +1,23 @@
+{
+  "substitutions": {
+    "sectionIdFind": [
+      {
+        "name": "",
+        "find": ""
+      }
+    ],
+    "direct": [
+      {
+        "name": "",
+        "find": ""
+      }
+    ]
+  },
+  "replacements": [
+    {
+      "find": "",
+      "replace": "",
+      "sectionID": ""
+    }
+  ]
+}
