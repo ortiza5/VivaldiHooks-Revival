@@ -87,34 +87,35 @@ def parseBundleJsToDict(bundleText):
   return parsedOutput
 
 def applyHook(hook, bundleText, bundleFunctions):
-  substitutions = hook["substitutions"]
   replacements = hook["replacements"]
 
   # build dictionary for parts of replacements that need to be changed
   subsDictionary = {}
+  if "substitutions" in hook:
+    substitutions = hook["substitutions"]
 
-  # look for any substitutions that should be section numbers
-  if "sectionIdFind" in substitutions:
-    for subName in substitutions["sectionIdFind"]:
-      if not subName["find"] or not subName["name"]: return False
-      for section, code in bundleFunctions.items():
-        if subName["find"] in code:
-          subsDictionary[subName["name"]] = section
-          break
+    # look for any substitutions that should be section numbers
+    if "sectionIdFind" in substitutions:
+      for subName in substitutions["sectionIdFind"]:
+        if not subName["find"] or not subName["name"]: return False
+        for section, code in bundleFunctions.items():
+          if subName["find"] in code:
+            subsDictionary[subName["name"]] = section
+            break
 
-      if subName["name"] not in subsDictionary:
-        return False
+        if subName["name"] not in subsDictionary:
+          return False
 
-  # look for any direct substitutions
-  if "direct" in substitutions:
-    for subName in substitutions["direct"]:
-      if not subName["find"] or not subName["name"]: return False
-      pattern = re.compile(subName["find"])
-      match = re.findall(pattern, bundleText)[0]
+    # look for any direct substitutions
+    if "direct" in substitutions:
+      for subName in substitutions["direct"]:
+        if not subName["find"] or not subName["name"]: return False
+        pattern = re.compile(subName["find"])
+        match = re.findall(pattern, bundleText)[0]
 
-      if not match: return False
+        if not match: return False
 
-      subsDictionary[subName["name"]] = match
+        subsDictionary[subName["name"]] = match
 
   # make the replacements and use the subs dictionary to make any changes
   for replacement in replacements:
@@ -122,19 +123,24 @@ def applyHook(hook, bundleText, bundleFunctions):
     replace = replacement["replace"]
 
     # find the code section where the replacement is taking place
-    section = None
-    for k, v in bundleFunctions.items():
-      if replacement["sectionID"] in v:
-        section = k
-        break
-    if section is None: return False
+    if "sectionID" in replacement:
+      section = None
+      for k, v in bundleFunctions.items():
+        if replacement["sectionID"] in v:
+          section = k
+          break
+      if section is None: return False
 
     # convert substitutions to letters used in the section
     for subName, subValue in subsDictionary.items():
       if subName not in find and subName not in replace: continue
 
-      pattern = re.compile("(?:(?<=,)|(?<=var ))([a-zA-Z]+)(?=\=n\(" + subValue + ")")
-      letter = re.findall(pattern, bundleFunctions[section])[0]
+      letter = None
+      if "sectionID" in replacement:
+        pattern = re.compile("(?:(?<=,)|(?<=var ))([a-zA-Z]+)(?=\=n\(" + subValue + ")")
+        letter = re.findall(pattern, bundleFunctions[section])[0]
+      else:
+        letter = subValue
 
       if not letter: return False
 
@@ -242,6 +248,11 @@ if __name__ == '__main__':
   
   parsedBundle = parseBundleJsToDict(bundleJs)
 
+  # make required change for more advanced hooks
+  result = applyHook({ "substitutions": { "direct": [{ "name": "EMPTY_SECTION", "find": "(?<=,)(\d{1,6})(?=:\(\)=>\{\},\d{1,6}:\(\)=>\{\},\d{1,6}:e)" }] }, "replacements": [{ "find": "EMPTY_SECTION:()=>{", "replace": "EMPTY_SECTION:(e,t,n)=>{" }] }, bundleJs, parsedBundle)
+  if result:
+    bundleJs = result
+
   # find the hook files
   # they can either be in a separate hooks folder or the same directory as this script
   pathToHooks = os.path.join(".", "hooks")
@@ -254,13 +265,14 @@ if __name__ == '__main__':
       with open(os.path.join(pathToHooks, hook), "r", encoding="utf-8") as f:
         data = json.load(f)
         result = applyHook(data, bundleJs, parsedBundle)
-        
+
         if result:
           bundleJs = result
           appliedHooks.append(hook)
 
   if len(appliedHooks) == 0:
     errorHandler("no hooks")
+
 
   print(appliedHooks)
 
