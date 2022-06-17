@@ -1,4 +1,23 @@
 {
-  "substitutions": [{ "name": "TEST", "find": "M1 4C1 2.89543 1.89543 2 3 2H13C14.1046 2 15 2.89543" }],
-  "replacements": [{ "find": "", "replace": "" }]
+  "substitutions": {
+    "sectionIdFind": [
+      {
+        "name": "",
+        "find": ""
+      }
+    ],
+    "direct": [
+      {
+        "name": "",
+        "find": ""
+      }
+    ]
+  },
+  "replacements": [
+    {
+      "find": "",
+      "replace": "",
+      "sectionID": ""
+    }
+  ]
 }
