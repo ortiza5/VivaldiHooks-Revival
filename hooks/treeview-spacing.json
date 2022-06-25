@@ -1,23 +1,17 @@
 {
   "substitutions": {
-    "sectionIdFind": [
-      {
-        "name": "",
-        "find": ""
-      }
-    ],
     "direct": [
       {
-        "name": "",
-        "find": ""
+        "name": "CREATE_ELEMENT",
+        "find": "(slider\"\\)}}const [a-zA-z_$]{1,3}=[a-zA-z_$]{1,3};var [a-zA-z_$]{1,3};function )\\K[a-zA-z_$]{1,3}(?=\\(e,t,n,i\\))"
       }
     ]
   },
   "replacements": [
     {
-      "find": "",
-      "replace": "",
-      "sectionID": ""
+      "find": "this.renderHUD()),",
+      "replace": "this.renderHUD()),(()=>{const spacingDetails=[{key:\"bookmarks\",default:24,label:\"Bookmarks\",mimeType:\"vivaldi/x-bookmarks\"},{key:\"downloads\",default:52,label:\"Downloads\",settings:\"DOWNLOADS_TREE\"},{key:\"history\",default:24,label:\"History\",settings:\"HISTORY_PANEL\"},{key:\"notes\",default:24,label:\"Notes\",mimeType:\"vivaldi/x-notes\"},{key:\"settingsNavigation\",default:28,label:\"Settings Navigation\",settings:\"SETTINGS_TREE\"},{key:\"windowPanel\",default:24,label:\"Window Panel\",mimeType:\"vivaldi/x-window-item\"}],rowsHeight=30;let items=[\"\"],section=[],usedKeys=[];spacingDetails.forEach(det=>{usedKeys.includes(det.key)||(usedKeys.push(det.key),console.log(det.label),items.push(CREATE_ELEMENT(\"div\",{className:\"setting-single\"},void 0,CREATE_ELEMENT(\"h3\",{},void 0,det.label),CREATE_ELEMENT(\"input\",{type:\"range\",min:12,max:64,step:1,value:30}),CREATE_ELEMENT(\"span\",{},void 0,30[det.key]+\"px\"))),items.length>=4&&(console.log(items.length),section.push(CREATE_ELEMENT(\"div\",{className:\"setting-group\"},...items)),console.log(section),items=[\"\"]))}),items.length&&section.push(CREATE_ELEMENT(\"div\",{className:\"setting-group\"},...items));return CREATE_ELEMENT(a_,{categoryTitle:\"Tree Views Row Height\",filter:this.props.filter,className:\"setting-group unlimited\"},void 0,...section)})(),",
+      "sectionID": "dispatch({actionType:\"HISTORY_LOAD_YESTERDAY_AND_OLDER"
     }
   ]
 }
