@@ -137,7 +137,7 @@ def applyHook(hook, bundleText, bundleFunctions):
 
       letter = None
       if "sectionID" in replacement:
-        pattern = re.compile("(?:(?<=,)|(?<=var ))([a-zA-Z]+)(?=\=n\(" + subValue + ")")
+        pattern = re.compile("(?:(?<=,)|(?<=var ))([a-zA-Z_$]+)(?=\=n\(" + subValue + ")")
         letter = re.findall(pattern, bundleFunctions[section])[0]
       else:
         letter = subValue
@@ -249,7 +249,7 @@ if __name__ == '__main__':
   parsedBundle = parseBundleJsToDict(bundleJs)
 
   # make required change for more advanced hooks
-  result = applyHook({ "substitutions": { "direct": [{ "name": "EMPTY_SECTION", "find": "(?<=,)(\d{1,6})(?=:\(\)=>\{\},\d{1,6}:\(\)=>\{\},\d{1,6}:e)" }] }, "replacements": [{ "find": "EMPTY_SECTION:()=>{", "replace": "EMPTY_SECTION:(e,t,n)=>{" }] }, bundleJs, parsedBundle)
+  result = applyHook({ "substitutions": { "direct": [{ "name": "EMPTY_SECTION", "find": "(?<=,)(\d{1,6})(?=:\(\)=>\{\},\d{1,6}:\(\)=>\{\},\d{1,6}:e)" }] }, "replacements": [{ "find": "EMPTY_SECTION:()=>{", "replace": "EMPTY_SECTION:(e,t,n)=>{console.log('Advanced Hooks:')" }] }, bundleJs, parsedBundle)
   if result:
     bundleJs = result
 
